@@ -109,13 +109,8 @@ def main():
     for item in player1.room.items:
       print(f'{item.qty}x [{item.name}] - {item.description}')
 
-    # player inventory 
-    print('\nHere\'s what you have:')
-    for item in player1.inventory:
-      print(f'{item.qty}x [{item.name}] - {item.description}')
-
     # player move
-    print('\n')
+    print('')
     allInput = input("What do you do?\n")
     userInput = allInput.split(' ')[1:]
     userCommand = allInput.split(' ')[:1][0].upper()
@@ -140,6 +135,13 @@ def main():
         player1.dropItem(inputItem[0], inputQty)
       else:
         print('That item does not exist!')
+    elif userCommand in ['I', 'INV', 'INVENTORY', 'ITEMS']:
+      if len(player1.inventory) > 0:
+        print('\nHere\'s what you have:')
+        for item in player1.inventory:
+          print(f'{item.qty}x [{item.name}] - {item.description}')
+      else:
+        print('\nThere is nothing in your inventory!')
     elif userCommand in ['Q', 'QUIT', 'EXIT', 'STOP']:
       print("Giving up already? Weak adventurers shouldn't even have started!")
       quitGame = True
