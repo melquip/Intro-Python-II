@@ -15,11 +15,14 @@ class Player:
     # add item to player inventory
     if availableQty > 0:
       if loot.name not in [item.name for item in self.inventory]:
-        self.inventory.append(Item(loot.name, loot.description, availableQty))
+        newItem = Item(loot.name, loot.description, availableQty)
+        self.inventory.append(newItem)
+        newItem.on_take(availableQty)
       else:
         for item in self.inventory:
           if item.name == loot.name:
             item.qty += availableQty
+            item.on_take(availableQty)
     else:
       print('No such item available in this room!')
 
@@ -33,6 +36,7 @@ class Player:
         else:
           availableQty = qty + (item.qty - qty)
         item.qty -= availableQty
+        item.on_drop(availableQty)
         if item.qty <= 0:
           self.inventory.pop(i)
     # add item to player room
