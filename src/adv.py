@@ -98,9 +98,6 @@ def goDirection(direction):
     player1.goToRoom(player1.room.s_to)
   elif direction == 'W' and direction in availableDirections:
     player1.goToRoom(player1.room.w_to)
-  elif direction == 'Q':
-    print("Giving up already? Weak adventurers shouldn't even have started!")
-    quitGame = True
   elif direction in allDirections and direction not in availableDirections:
     print("Congrats! You just smashed your face on the wall!")
   elif direction not in allDirections:
@@ -108,9 +105,21 @@ def goDirection(direction):
 
 def tutorial():
   print('Available commands:')
-  print('go <dir>, where <dir> is N, E, S, W, to change rooms')
-  print('get <qty> <item-name>, to pick up <qty>x of <item-name>')
-  print('drop <qty> <item-name>, to drop <qty>x of <item-name>')
+  print(
+    ['GO', 'GOTO', 'ROOM', 'TRAVEL', 'T'],
+    '<dir>, where <dir> is N, E, S, W, to change rooms',
+    '\nExamples: go n, goto e, room s, travel w, t n'
+  )
+  print(
+    ['GET', 'PICK', 'PICKUP', 'LOOT', 'G', 'P', 'L'],
+    '<qty> <item-name>, to pick up / loot <qty>x of <item-name> into your inventory',
+    '\nExamples: get 1 rock, pick 1 rock, pickup 1 rock, loot 1 rock, g 1 rock, p 1 rock, l 1 rock'
+  )
+  print(
+    ['DROP', 'REM', 'REMOVE', 'DESTROY', 'D', 'R'],
+    '<qty> <item-name>, to drop / remove <qty> of <item-name> from your inventory and put back in room',
+    '\nExamples: drop 1 rock, rem 1 rock, remove 1 rock, destroy 1 rock, d 1 rock, r 1 rock'
+  )
   print('\n')
 
 tutorial()
@@ -145,18 +154,27 @@ while not quitGame:
   print('\n')
 
   # execute correct player command
-  if userCommand == 'GO':
+  if userCommand in ['GO', 'GOTO', 'ROOM', 'TRAVEL', 'T']:
     goDirection(userInput[0].upper())
-  elif userCommand == 'GET':
+  elif userCommand in ['GET', 'PICK', 'PICKUP', 'LOOT', 'G', 'P', 'L']:
     inputItem = ''.join(userInput[1:]).lower().capitalize()
-    inputItem = [item for item in items if item.name == inputItem][0]
+    inputItem = [item for item in items if item.name == inputItem]
     inputQty = int(userInput[:1][0])
-    player1.getItem(inputItem, inputQty)
-  elif userCommand == 'DROP':
+    if len(inputItem) > 0:
+      player1.getItem(inputItem[0], inputQty)
+    else:
+      print('That item does not exist!')
+  elif userCommand in ['DROP', 'REM', 'REMOVE', 'DESTROY', 'D', 'R']:
     inputItem = ''.join(userInput[1:]).lower().capitalize()
-    inputItem = [item for item in items if item.name == inputItem][0]
+    inputItem = [item for item in items if item.name == inputItem]
     inputQty = int(userInput[:1][0])
-    player1.dropItem(inputItem, inputQty)
+    if len(inputItem) > 0:
+      player1.dropItem(inputItem[0], inputQty)
+    else:
+      print('That item does not exist!')
+  elif userCommand in ['Q', 'QUIT', 'EXIT', 'STOP']:
+    print("Giving up already? Weak adventurers shouldn't even have started!")
+    quitGame = True
   else:
     print('That command is invalid.')
     tutorial()
