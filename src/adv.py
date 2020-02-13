@@ -89,7 +89,7 @@ player1 = Player(rooms[initialRoom], [])
 quitGame = False
 
 def main():
-  global allDirections, initialRoom, player1, quitGame
+  global allDirections, initialRoom, player1, quitGame, availableDirections
   tutorial()
   while not quitGame:
     # player current location
@@ -152,7 +152,7 @@ def main():
     print('\n')
     
 def goDirection(direction):
-  global player1, allDirections, quitGame
+  global player1, allDirections, quitGame, availableDirections
   if direction == 'N' and direction in availableDirections:
     player1.goToRoom(player1.room.n_to)
   elif direction == 'E' and direction in availableDirections:
