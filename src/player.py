@@ -22,9 +22,14 @@ class Player:
     # add item to player inventory
     if availableQty > 0:
       if loot.name not in [item.name for item in self.inventory]:
-        newItem = Item(loot.name, loot.description, availableQty)
-        self.inventory.append(newItem)
-        newItem.on_take(availableQty)
+        newItem = None
+        if isinstance(loot, Item):
+          newItem = Item(loot.name, loot.description, availableQty)
+        elif isinstance(loot, LightSource):
+          newItem = LightSource(loot.name, loot.description)
+        if newItem != None:
+          self.inventory.append(newItem)
+          newItem.on_take(availableQty)
       else:
         for item in self.inventory:
           if item.name == loot.name:
@@ -71,6 +76,7 @@ class Player:
 
   def holdLightSource(self):
     for item in self.inventory:
+      print(f'gonna hold? {item.name} {type(item)} normal:{isinstance(item, Item)} light:{isinstance(item, LightSource)}')
       if isinstance(item, Item) and issubclass(type(item), Item):
         self.holdItem(item)
         break

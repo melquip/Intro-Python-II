@@ -14,6 +14,7 @@ items = [
 
 def createItem(i):
   item = items[i]
+  print(f'creating {item.name} {type(item)} normal:{isinstance(item, Item)} light:{isinstance(item, LightSource)}')
   if isinstance(item, Item):
     return Item(item.name, item.description, item.qty)
   elif isinstance(item, LightSource):
@@ -59,7 +60,7 @@ earlier adventurers. The only exit is to the south.""",
   ),
 }
 
-
+print(rooms['outside'].items)
 # Link rooms together
 
 rooms['outside'].n_to = rooms['foyer']
