@@ -1,4 +1,5 @@
 from item import Item
+from lightsource import LightSource
 from room import Room
 from player import Player
 
@@ -8,18 +9,22 @@ items = [
   Item('Sword', 'A good-looking weapon.', 1),
   Item('Rock', 'Rubble from ancient structures.', 3),
   Item('Coin', 'A golden coin from an ancient civilization.', 2),
+  LightSource('Lamp', 'An old but still functioning oil lamp.'),
 ]
 
 def createItem(i):
   item = items[i]
-  return Item(item.name, item.description, item.qty)
+  if isinstance(item, Item):
+    return Item(item.name, item.description, item.qty)
+  elif isinstance(item, LightSource):
+    return LightSource(item.name, item.description)
 
 rooms = {
   'outside': Room(
     "Outside Cave Entrance", 
     "North of you, the cave mount beckons", 
     'outside',
-    [createItem(2)]
+    [createItem(2), createItem(4)]
   ),
   'foyer': Room(
     "Foyer",
@@ -34,7 +39,8 @@ passages run north and east.""",
 into the darkness. Ahead to the north, a light flickers in
 the distance, but there is no way across the chasm.""",
   'overlook',
-  [createItem(2)]
+  [createItem(2)],
+  False
   ),
   'narrow': Room(
     "Narrow Passage",
@@ -84,82 +90,112 @@ rooms['treasure'].s_to = rooms['narrow']
 allDirections = ['N', 'E', 'S', 'W']
 availableDirections = []
 initialRoom = 'outside'
+lastLitRoom = rooms[initialRoom]
 player1 = Player(rooms[initialRoom], [])
 
 quitGame = False
 
 def main():
-  global allDirections, initialRoom, player1, quitGame, availableDirections
+  global player1, allDirections, availableDirections, quitGame
   tutorial()
   while not quitGame:
-    # player current location
-    print(f"You walked into the Room {player1.room.name}")
-    print(f"{player1.room.description}\n")
+    if player1.room.is_light:
+      # player current location
+      print(f"You walked into the Room {player1.room.name}")
+      print(f"{player1.room.description}\n")
 
-    # directions you can travel
-    availableDirections = [key.split("_")[0].upper() for key, val in vars(player1.room).items() if key not in ['name', 'description', 'key']]
-    for direction in allDirections:
-      if direction in availableDirections:
-        print(f'[{direction}] Looks like a promising path...')
-      else:
-        print(f'[{direction}] Doesn\'t inpire confidence...')
-    
-    # room items
-    print('\nHere\'s what you can see:')
-    for item in player1.room.items:
-      print(f'{item.qty}x [{item.name}] - {item.description}')
-
+      # directions you can travel
+      availableDirections = [key.split("_")[0].upper() for key, val in vars(player1.room).items() if key not in ['name', 'description', 'key']]
+      for direction in allDirections:
+        if direction in availableDirections:
+          print(f'[{direction}] Looks like a promising path...')
+        else:
+          print(f'[{direction}] Doesn\'t inpire confidence...')
+      
+      # room items
+      print('\nHere\'s what you can see:')
+      for item in player1.room.items:
+        print(f'{item.qty}x [{item.name}] - {item.description}')
+    else:
+      print('It\'s pitch black!')
     # player move
-    print('')
-    allInput = input("What do you do?\n")
-    userInput = allInput.split(' ')[1:]
-    userCommand = allInput.split(' ')[:1][0].upper()
-    print('\n')
+    executeUserInput()
 
-    # execute correct player command
-    if userCommand in ['GO', 'GOTO', 'ROOM', 'TRAVEL', 'T']:
-      goDirection(userInput[0].upper())
-    elif userCommand in ['GET', 'PICK', 'PICKUP', 'LOOT', 'G', 'P', 'L']:
-      inputItem = ''.join(userInput[1:]).lower().capitalize()
-      inputItem = [item for item in items if item.name == inputItem]
-      inputQty = int(userInput[:1][0])
-      if len(inputItem) > 0:
-        player1.getItem(inputItem[0], inputQty)
-      else:
-        print('That item does not exist!')
-    elif userCommand in ['DROP', 'REM', 'REMOVE', 'DESTROY', 'D', 'R']:
-      inputItem = ''.join(userInput[1:]).lower().capitalize()
-      inputItem = [item for item in items if item.name == inputItem]
-      inputQty = int(userInput[:1][0])
-      if len(inputItem) > 0:
-        player1.dropItem(inputItem[0], inputQty)
-      else:
-        print('That item does not exist!')
-    elif userCommand in ['I', 'INV', 'INVENTORY', 'ITEMS']:
+def executeUserInput():
+  global player1, allDirections, availableDirections, lastLitRoom, quitGame
+  print('')
+  allInput = input("What do you do?\n")
+  print('\n')
+  userInput = allInput.split(' ')[1:]
+  userCommand = allInput.split(' ')[:1][0].upper()
+
+  # travel rooms
+  if userCommand in ['GO', 'GOTO', 'ROOM', 'TRAVEL', 'T'] and player1.isRoomLit():
+    goDirection(userInput[0].upper())
+  # pick up items to player inventory
+  elif userCommand in ['GET', 'TAKE', 'PICK', 'PICKUP', 'G', 'T', 'P']:
+    inputItem = ''.join(userInput[1:]).lower().capitalize()
+    inputItem = [item for item in items if item.name == inputItem]
+    inputQty = int(userInput[:1][0])
+    if len(inputItem) > 0:
+      player1.getItem(inputItem[0], inputQty)
+    else:
+      print('That item does not exist!')
+  # drop items back into room
+  elif userCommand in ['DROP', 'REM', 'REMOVE', 'DESTROY', 'D', 'R']:
+    inputItem = ''.join(userInput[1:]).lower().capitalize()
+    inputItem = [item for item in items if item.name == inputItem]
+    inputQty = int(userInput[:1][0])
+    if len(inputItem) > 0:
+      player1.dropItem(inputItem[0], inputQty)
+    else:
+      print('That item does not exist!')
+  # see player inventory
+  elif userCommand in ['I', 'INV', 'INVENTORY', 'ITEMS']:
+    if player1.isRoomLit():
       if len(player1.inventory) > 0:
         print('\nHere\'s what you have:')
         for item in player1.inventory:
           print(f'{item.qty}x [{item.name}] - {item.description}')
       else:
         print('\nThere is nothing in your inventory!')
-    elif userCommand in ['Q', 'QUIT', 'EXIT', 'STOP']:
-      print("Giving up already? Weak adventurers shouldn't even have started!")
-      quitGame = True
+    else:
+      print('You can\'t find anything in the darkness!')
+  # quit the game
+  elif userCommand in ['Q', 'QUIT', 'EXIT', 'STOP']:
+    print("Giving up already? Weak adventurers shouldn't even have started!")
+    quitGame = True
+  # room is not lit, new commands available
+  elif not player1.isRoomLit():
+    if userCommand in ['L', 'LEAVE', 'B', 'BACK']:
+      player1.goToRoom(lastLitRoom)
+    elif userCommand in ['H', 'HOLD']:
+      if player1.holdLightSource():
+        print(f"You\'re holding a [{player1.holding.name}]\nand can see much better now!")
+      else:
+        print("Oh no! You don\'t have any light source available!")
     else:
       print('That command is invalid.')
       tutorial()
+  else:
+    print('That command is invalid.')
+    tutorial()
 
-    print('\n')
+  print('\n')
     
 def goDirection(direction):
-  global player1, allDirections, quitGame, availableDirections
+  global player1, allDirections, availableDirections, lastLitRoom, quitGame
   if direction == 'N' and direction in availableDirections:
+    lastLitRoom = player1.room
     player1.goToRoom(player1.room.n_to)
   elif direction == 'E' and direction in availableDirections:
+    lastLitRoom = player1.room
     player1.goToRoom(player1.room.e_to)
   elif direction == 'S' and direction in availableDirections:
+    lastLitRoom = player1.room
     player1.goToRoom(player1.room.s_to)
   elif direction == 'W' and direction in availableDirections:
+    lastLitRoom = player1.room
     player1.goToRoom(player1.room.w_to)
   elif direction in allDirections and direction not in availableDirections:
     print("Congrats! You just smashed your face on the wall!")
@@ -174,9 +210,9 @@ def tutorial():
     '\nExamples: go n, goto e, room s, travel w, t n'
   )
   print(
-    ['GET', 'PICK', 'PICKUP', 'LOOT', 'G', 'P', 'L'],
+    ['GET', 'TAKE', 'PICK', 'PICKUP', 'G', 'T', 'P'],
     '<qty> <item-name>, to pick up / loot <qty>x of <item-name> into your inventory',
-    '\nExamples: get 1 rock, pick 1 rock, pickup 1 rock, loot 1 rock, g 1 rock, p 1 rock, l 1 rock'
+    '\nExamples: get 1 rock, pick 1 rock, pickup 1 rock, take 1 rock, g 1 rock, p 1 rock, t 1 rock'
   )
   print(
     ['DROP', 'REM', 'REMOVE', 'DESTROY', 'D', 'R'],

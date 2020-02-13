@@ -1,12 +1,15 @@
 # Implement a class to hold room information. This should have name and
 # description attributes.
 from item import Item
+from lightsource import LightSource
+
 class Room:
-  def __init__(self, name, description, key, items = []):
+  def __init__(self, name, description, key, items = [], is_light = True):
     self.key = key
     self.name = name
     self.description = description
     self.items = items
+    self.is_light = is_light
 
   def getItem(self, loot, qty = 1):
     if loot.name not in [item.name for item in self.items]:
