@@ -23,10 +23,10 @@ class Player:
     if availableQty > 0:
       if loot.name not in [item.name for item in self.inventory]:
         newItem = None
-        if isinstance(loot, Item):
-          newItem = Item(loot.name, loot.description, availableQty)
-        elif isinstance(loot, LightSource):
+        if isinstance(loot, LightSource):
           newItem = LightSource(loot.name, loot.description)
+        elif isinstance(loot, Item):
+          newItem = Item(loot.name, loot.description, availableQty)
         if newItem != None:
           self.inventory.append(newItem)
           newItem.on_take(availableQty)
@@ -70,14 +70,11 @@ class Player:
     return self
 
   def isRoomLit(self):
-    return self.room.is_light or (
-      not self.room.is_light and (isinstance(self.holding, Item) and issubclass(type(self.holding), Item))
-    )
+    return self.room.is_light or (not self.room.is_light and isinstance(self.holding, LightSource))
 
   def holdLightSource(self):
     for item in self.inventory:
-      print(f'gonna hold? {item.name} {type(item)} normal:{isinstance(item, Item)} light:{isinstance(item, LightSource)}')
-      if isinstance(item, Item) and issubclass(type(item), Item):
+      if isinstance(item, LightSource):
         self.holdItem(item)
         break
-    return isinstance(self.holding, Item) and issubclass(type(self.holding), Item)
+    return isinstance(self.holding, LightSource)

@@ -14,10 +14,10 @@ class Room:
   def getItem(self, loot, qty = 1):
     if loot.name not in [item.name for item in self.items]:
       newItem = None
-      if isinstance(loot, Item):
-        newItem = Item(loot.name, loot.description, qty)
-      elif isinstance(loot, LightSource):
+      if isinstance(loot, LightSource):
         newItem = LightSource(loot.name, loot.description)
+      elif isinstance(loot, Item):
+        newItem = Item(loot.name, loot.description, qty)
       if newItem != None:
         self.items.append(newItem)
     else:

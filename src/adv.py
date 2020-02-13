@@ -14,11 +14,11 @@ items = [
 
 def createItem(i):
   item = items[i]
-  print(f'creating {item.name} {type(item)} normal:{isinstance(item, Item)} light:{isinstance(item, LightSource)}')
-  if isinstance(item, Item):
-    return Item(item.name, item.description, item.qty)
-  elif isinstance(item, LightSource):
+  if isinstance(item, LightSource):
     return LightSource(item.name, item.description)
+  elif isinstance(item, Item):
+    return Item(item.name, item.description, item.qty)
+  
 
 rooms = {
   'outside': Room(
@@ -60,7 +60,7 @@ earlier adventurers. The only exit is to the south.""",
   ),
 }
 
-print(rooms['outside'].items)
+print([type(item) for item in rooms['outside'].items])
 # Link rooms together
 
 rooms['outside'].n_to = rooms['foyer']
@@ -100,7 +100,7 @@ def main():
   global player1, allDirections, availableDirections, quitGame
   tutorial()
   while not quitGame:
-    if player1.room.is_light:
+    if player1.isRoomLit():
       # player current location
       print(f"You walked into the Room {player1.room.name}")
       print(f"{player1.room.description}\n")
